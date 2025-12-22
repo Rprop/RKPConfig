@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/version"
+        style="@style/TextStyle.Explain"
+        android:layout_gravity="center_horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/TextStyle.Content"
+                android:layout_marginTop="10dp"
+                android:text="@string/remote_provisioning_enable_rkpd" />
+
+            <com.xuexiang.xui.widget.button.switchbutton.SwitchButton
+                android:id="@+id/enable_rkpd"
+                style="@style/SwitchButtonStyleMD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/TextStyle.Content"
+            android:text="@string/remote_provisioning_hostname" />
+
+        <com.xuexiang.xui.widget.spinner.editspinner.EditSpinner
+            android:id="@+id/hostname"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+            app:es_entries="@array/rkp_svr"
+            app:es_isFilterKey="true"
+            app:es_maxLength="256" />
+
+        <LinearLayout
+            android:id="@+id/strongbox_rkp_only_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/TextStyle.Content"
+                android:layout_marginTop="10dp"
+                android:text="@string/remote_provisioning_strongbox_rkp_only" />
+
+            <com.xuexiang.xui.widget.button.switchbutton.SwitchButton
+                android:id="@+id/strongbox_rkp_only"
+                style="@style/SwitchButtonStyleMD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/TextStyle.Content"
+                android:layout_marginTop="10dp"
+                android:text="@string/remote_provisioning_tee_rkp_only" />
+
+            <com.xuexiang.xui.widget.button.switchbutton.SwitchButton
+                android:id="@+id/tee_rkp_only"
+                style="@style/SwitchButtonStyleMD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/TextStyle.Content"
+            android:text="@string/remote_provisioning_connect_timeout_millis" />
+
+        <com.xuexiang.xui.widget.picker.XSeekBar
+            android:id="@+id/connect_timeout_millis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:xsb_insideRangeLineStrokeWidth="5dp"
+            app:xsb_isShowBubble="true"
+            app:xsb_max="30"
+            app:xsb_min="0"
+            app:xsb_numberTextSize="10sp"
+            app:xsb_outsideRangeLineStrokeWidth="5dp"
+            app:xsb_rulerColor="@color/xui_config_color_gray_4"
+            app:xsb_rulerInterval="ten" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/load"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/load" />
+
+        <Button
+            android:id="@+id/apply"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/apply" />
+
+        <Button
+            android:id="@+id/cls"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/cls" />
+
+        <Button
+            android:id="@+id/engineer"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/rpmb_keys" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/clear"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/clear" />
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/renew"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/renew" />
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/dump"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/dump" />
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/csr"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/csr" />
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/certify"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/certify" />
+    </LinearLayout>
+
+    <com.xuexiang.xui.widget.textview.LoggerTextView
+        android:id="@+id/logger"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/xui_config_content_spacing_vertical" />
+
+
+</LinearLayout>

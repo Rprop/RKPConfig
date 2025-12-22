@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="rkp_svr">
+        <item>remoteprovisioning.googleapis.com</item>
+        <item>remoteprovisioning.grapheneos.org</item>
+    </string-array>
+</resources>

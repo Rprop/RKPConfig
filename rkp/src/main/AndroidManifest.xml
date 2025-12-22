@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <queries>
+        <package android:name="com.oplus.engineermode" />
+        <package android:name="com.google.android.rkpdapp" />
+        <package android:name="com.android.rkpdapp" />
+        <package android:name="com.android.remoteprovisioner" />
+    </queries>
+
+    <application
+        android:name=".AppLike"
+        android:extractNativeLibs="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="RKPConfig"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.xuexiang.xui.widget.imageview.preview.ui.PreviewActivity"
+            android:theme="@style/XUITheme.Translucent"
+            tools:node="remove" />
+
+        <activity
+            android:name="com.xuexiang.xui.widget.imageview.preview.ui.VideoPlayerActivity"
+            android:theme="@style/XUITheme.Translucent"
+            tools:node="remove" />
+    </application>
+
+</manifest>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="remote_provisioning_enable_rkpd">启用远程密钥配置RKPD</string>
+    <string name="remote_provisioning_hostname">远程服务器域(国内选择grapheneos代理)</string>
+    <string name="remote_provisioning_strongbox_rkp_only">StrongBox环境强制使用远程密钥配置</string>
+    <string name="remote_provisioning_tee_rkp_only">TEE环境强制使用远程密钥配置</string>
+    <string name="remote_provisioning_connect_timeout_millis">远程服务请求超时(秒)</string>
+    <string name="load">加载</string>
+    <string name="apply">设置</string>
+    <string name="cls">清屏</string>
+    <string name="rpmb_keys">Key状态</string>
+    <string name="clear">清理</string>
+    <string name="renew">刷新</string>
+    <string name="dump">转储</string>
+    <string name="csr">凭据</string>
+    <string name="certify">认证</string>
+
+    <string name="copy_to_clip">已复制到剪贴板</string>
+
+    <string name="no_csr_need">, 密钥足够无须重签</string>
+    <string name="csr_ok">, 签发成功</string>
+
+    <string name="tips_succeed" formatted="false">%s成功%s</string>
+    <string name="tips_failed" formatted="false">%s失败, 检查详细日志并传送作者</string>
+    <string name="tips_su_failed" formatted="false">%s失败, 检查su授权</string>
+
+    <string name="apply_reboot_tips">, 重启后失效</string>
+
+    <string name="critical_warning">重要警告</string>
+    <string name="critical_warning_tips" formatted="false">此工具需要ROOT权限, 请谨慎使用.\n\n不要从未知来源下载、安装和使用本工具.</string>
+    <string name="critical_warning_confirm">我了解风险</string>
+
+    <string name="clear_title">清空远程配置密钥</string>
+    <string name="clear_tips" formatted="false">立即清空全部远程配置的密钥?\n\n下次密钥验证时将须联网签发或回退至工厂 keybox 密钥</string>
+    <string name="clear_confirm">好的</string>
+    <string name="clear_cancel">取消</string>
+
+    <string name="guide_tips" formatted="false">使用 `%s` 以 %s</string>
+    <string name="guide_tips_load">加载当前系统远程密钥配置</string>
+    <string name="guide_tips_apply">修改系统远程密钥配置</string>
+    <string name="guide_tips_cls">清空屏幕日志输出</string>
+    <string name="guide_tips_clear">清空全部远程配置的密钥</string>
+    <string name="guide_tips_renew">立即请求服务器签发远程密钥配置证书</string>
+    <string name="guide_tips_dump">转储服务信息及当前密钥分配状态</string>
+    <string name="guide_tips_csr">生成并打印设备证书签名请求 CSR 凭据</string>
+    <string name="guide_tips_certify">输出 PEM 格式的证书链</string>
+</resources>

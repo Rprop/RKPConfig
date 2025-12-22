@@ -1,0 +1,136 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace = 'rp.rkp'
+    ndkVersion = rootProject.ext.kNdkVersion
+    buildToolsVersion = rootProject.ext.kBuildToolsVersion
+    compileSdk = rootProject.ext.kCompileSdk
+
+    buildFeatures {
+        buildConfig = true
+        aidl = true
+    }
+
+    defaultConfig {
+        minSdkVersion 34
+        targetSdkVersion rootProject.ext.kTargetSdkVersion
+        applicationId 'rp.rkp'
+        versionCode rootProject.ext.kVersionCode
+        versionName Integer.toString(versionCode)
+
+        externalNativeBuild {
+            cmake {
+                abiFilters 'x86_64', 'arm64-v8a'
+            }
+        }
+
+        ndk {
+            abiFilters 'x86_64', 'arm64-v8a'
+        }
+
+        resourceConfigurations += ['en', 'zh-rCN']
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+            version rootProject.ext.kCmakeVersion
+        }
+    }
+
+    signingConfigs {
+        base {
+            storeFile file('rkp.jks')
+            storePassword 'rkprkp'
+            keyAlias 'rkp'
+            keyPassword 'rkprkp'
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable false
+            minifyEnabled false
+            shrinkResources = false
+            signingConfig = signingConfigs.base
+        }
+        release {
+            externalNativeBuild {
+                cmake {
+                    arguments '-DCMAKE_BUILD_TYPE=Release'
+                }
+            }
+            debuggable false
+            jniDebuggable false
+            minifyEnabled true
+            shrinkResources = true
+            signingConfig = signingConfigs.base
+            proguardFiles 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+            excludes += ['kotlin/**',
+                         'kotlin/*',
+                         'androidx/*',
+                         'META-INF/kotlin*',
+            ]
+        }
+        resources {
+            excludes += ['kotlin/**',
+                         'kotlin/*',
+                         'androidx/*',
+                         'META-INF/kotlin*',
+            ]
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def oldFile = output.outputFileName
+            def newName = oldFile.replace(".", "-v" + versionCode + '.')
+            outputFileName = newName.toLowerCase()
+        }
+    }
+}
+
+dependencies {
+    compileOnly fileTree(include: ['*.jar'], dir: 'ref')
+    implementation fileTree(include: ['*.jar'], dir: 'imp')
+
+    implementation 'com.github.xuexiangjys:XUI:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
+
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:6.1'
+    implementation 'com.github.topjohnwu.libsu:core:6.0.0'
+
+    // implementation 'co.nstant.in:cbor:0.8'
+}
+
+tasks.register('genRelease') {
+    dependsOn(assembleRelease)
+    doFirst {
+        final File buildDir = new File(project.layout.projectDirectory.asFile, 'build')
+        final File jniLibsDir = new File(buildDir, '../src/main/jniLibs')
+        final File cxxDir = new File(buildDir, '.cxx/Release')
+        java.nio.file.Files.copy(
+                new File("${cxxDir}/arm64-v8a/rkp").toPath(),
+                new File("${jniLibsDir}/arm64-v8a/librkp.so").toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        java.nio.file.Files.copy(
+                new File("${cxxDir}/x86_64/rkp").toPath(),
+                new File("${jniLibsDir}/x86_64/librkp.so").toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
+}

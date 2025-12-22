@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="remote_provisioning_enable_rkpd">remote_provisioning.enable_rkpd</string>
+    <string name="remote_provisioning_hostname">remote_provisioning.hostname</string>
+    <string name="remote_provisioning_strongbox_rkp_only">remote_provisioning.strongbox.rkp_only</string>
+    <string name="remote_provisioning_tee_rkp_only">remote_provisioning.tee.rkp_only</string>
+    <string name="remote_provisioning_connect_timeout_millis">remote_provisioning.connect_timeout_millis</string>
+    <string name="load">Load</string>
+    <string name="apply">Apply</string>
+    <string name="cls">Cls</string>
+    <string name="rpmb_keys">RPMB Keys</string>
+    <string name="clear">Clear</string>
+    <string name="renew">Renew</string>
+    <string name="dump">Dump</string>
+    <string name="csr">Csr</string>
+    <string name="certify">Certify</string>
+
+    <string name="copy_to_clip">Copied to clipboard</string>
+
+    <string name="no_csr_need">, sufficient keys, no CSR needed</string>
+    <string name="csr_ok">, CSR OK</string>
+
+    <string name="version" formatted="false">RKPConfig v%s</string>
+
+    <string name="tips_succeed" formatted="false">%s succeed%s</string>
+    <string name="tips_failed" formatted="false">%s failed, check logs and send to author</string>
+    <string name="tips_su_failed" formatted="false">%s failed, check su</string>
+
+    <string name="apply_reboot_tips">, will lost after reboot</string>
+
+    <string name="critical_warning">Critical Warning</string>
+    <string name="critical_warning_tips" formatted="false">This app accesses root privileges, please use at your own risk.\n\nDo not download apk from untrusted sources.</string>
+    <string name="critical_warning_confirm">I UNDERSTAND</string>
+
+    <string name="clear_title">Clear RKP Keys</string>
+    <string name="clear_tips">Clear all remote provisioned keys immediately?</string>
+    <string name="clear_confirm">YES</string>
+    <string name="clear_cancel">NO</string>
+
+    <string name="guide_tips" formatted="false">Use `%s` to %s</string>
+    <string name="guide_tips_load">load current system rkp configs</string>
+    <string name="guide_tips_apply">set rkp configs</string>
+    <string name="guide_tips_cls">clear output logs</string>
+    <string name="guide_tips_clear">clear rkp keys</string>
+    <string name="guide_tips_renew">start provisioning the device and widevine</string>
+    <string name="guide_tips_dump">dump rkpd service diagnostics</string>
+    <string name="guide_tips_csr">generate and print a base64-encoded CSR</string>
+    <string name="guide_tips_certify">output the PEM-encoded certificate chain provisioned</string>
+</resources>

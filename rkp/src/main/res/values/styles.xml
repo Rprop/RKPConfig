@@ -1,0 +1,11 @@
+<resources>
+
+    <style name="AppTheme" parent="XUITheme.Phone"/>
+
+    <style name="SwitchButtonStyleMD" parent="SwitchButtonMD">
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+    </style>
+</resources>

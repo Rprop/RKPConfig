@@ -1,0 +1,55 @@
+package rp.rkp;
+
+import android.system.Os;
+import android.util.Log;
+
+import java.io.File;
+
+import dalvik.system.PathClassLoader;
+
+public class OplusEngineer {
+    private static final String TAG = "OPlus";
+
+    public static void main(String[] args) {
+        Log.i(TAG, "hello");
+        try {
+            ClassLoader cl = OplusEngineer.class.getClassLoader();
+            assert cl != null;
+            PathClassLoader libCL = new PathClassLoader(
+                    findLib("/system/system_ext/framework/vendor.oplus.hardware.biometrics.fingerprintpay"),
+                    cl.getParent());
+            rkpd.setParent(cl, libCL);
+
+            Log.i(TAG, "isSoterKeySupport = " + com.oplus.engineermode.security.SecurityInterface.isSoterKeySupport());
+            Log.i(TAG, "verifyAttkKeyPair = " + com.oplus.engineermode.security.SecurityInterface.verifyAttkKeyPair());
+            Log.i(TAG, "soterDeviceId = " + com.oplus.engineermode.security.SecurityInterface.getDeviceId().getData());
+
+            Os.setuid(1000);
+
+            Log.i(TAG, "isGoogleKeyImport = " + com.oplus.engineermode.security.SecurityInterface.isGoogleKeyImport());
+            Log.i(TAG, "genRkpInfo('default') = " + com.oplus.engineermode.security.SecurityInterface.genRkpInfo("default"));
+
+            Log.i(TAG, "isSupportRkpWidevine = " + com.oplus.engineermode.security.SecurityInterface.isSupportRkpWidevine());
+            Log.i(TAG, "genRkpInfo('widevine') = " + com.oplus.engineermode.security.SecurityInterface.genRkpInfo("widevine"));
+            Log.i(TAG, "drmInfo = " + com.oplus.engineermode.security.SecurityInterface.queryDrmInfo());
+        } catch (final Throwable tr) {
+            Log.e(TAG, "main", tr);
+            System.err.println(android.util.Log.getStackTraceString(tr));
+        }
+    }
+
+    private static String findLib(String prefix) {
+        File dir = new File(prefix).getParentFile();
+        assert dir != null;
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String path = file.getPath();
+                if (path.startsWith(prefix) && path.endsWith(".jar")) {
+                    return path;
+                }
+            }
+        }
+        return null;
+    }
+}

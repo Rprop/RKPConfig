@@ -1,0 +1,2 @@
+-repackageclasses rp
+-keepattributes InnerClasses
