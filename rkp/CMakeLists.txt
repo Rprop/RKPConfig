@@ -13,7 +13,6 @@ add_compile_options(
         -DNDEBUG
 )
 add_link_options(
-        -static
         -Wl,--strip-all
         -Wl,--gc-sections
 )
@@ -26,4 +25,21 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/.cxx/${CMAKE_BUIL
 add_executable(
         rkp
         src/main/cpp/rkp.cpp
+)
+target_link_options(rkp PRIVATE -static)
+add_custom_command(TARGET rkp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rkp> ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/librkp.so
+)
+
+# ----------------------------------------------------------------
+
+add_executable(
+        kmcli
+        src/main/cpp/kmcli.c
+)
+target_link_libraries(kmcli PRIVATE dl)
+add_custom_command(TARGET kmcli POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:kmcli> ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libkmcli.so
 )

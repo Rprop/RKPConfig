@@ -1,8 +1,10 @@
 package rp.rkp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -16,6 +18,7 @@ import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
@@ -40,8 +43,10 @@ import com.xuexiang.xui.widget.textview.LoggerTextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -50,6 +55,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import co.nstant.in.cbor.CborDecoder;
@@ -58,6 +65,10 @@ import co.nstant.in.cbor.model.DataItem;
 
 public class MainActivity extends Activity {
 
+    private static final int REQ_EXPORT_KEYBOX = 1001;
+    private static File sPendingFile;
+
+    @SuppressLint("ThreadConstraint")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,76 +127,85 @@ public class MainActivity extends Activity {
             return false;
         });
         logger.logNormal('\n' + Build.FINGERPRINT);
-        findViewById(R.id.load).setOnClickListener(view -> {
-            ArrayList<String> output = new ArrayList<>();
-            try (Shell shell = Shell.Builder.create().build(su.get())) {
-                shell.newJob()
-                        .add("getprop remote_provisioning.enable_rkpd")
-                        .add("getprop remote_provisioning.hostname")
-                        .add("getprop remote_provisioning.strongbox.rkp_only")
-                        .add("getprop remote_provisioning.tee.rkp_only")
-                        .add("getprop remote_provisioning.connect_timeout_millis")
-                        .to(output)
-                        .exec();
-                logger.logNormal(Arrays.toString(output.toArray()));
-                enable_rkpd.setChecked("true".equalsIgnoreCase(output.get(0)) || "1".equals(output.get(0)));
-                hostname.setText(output.get(1));
-                strongbox_rkp_only.setChecked("true".equalsIgnoreCase(output.get(2)) || "1".equals(output.get(2)));
-                tee_rkp_only.setChecked("true".equalsIgnoreCase(output.get(3)) || "1".equals(output.get(3)));
-                connect_timeout_millis.setDefaultValue(output.get(4).isEmpty() ? 0 : Integer.parseInt(output.get(4)) / 1000);
-                boolean enable = enable_rkpd.isChecked();
-                String host = hostname.getText().trim();
-                boolean strongbox = strongbox_rkp_only.isChecked();
-                boolean tee = tee_rkp_only.isChecked();
-                int timeout = connect_timeout_millis.getSelectedNumber();
-                sp.edit()
-                        .putBoolean("enable", enable)
-                        .putString("hostname", host)
-                        .putBoolean("strongbox", strongbox)
-                        .putBoolean("tee", tee)
-                        .putInt("timeout", timeout)
-                        .apply();
-                logger.logSuccess(getString(R.string.tips_succeed, getViewText(view), ""));
-            } catch (NoShellException e) {
-                logger.logNormal(android.util.Log.getStackTraceString(e));
-                logger.logError(getString(R.string.tips_su_failed, getViewText(view)));
-            } catch (Exception e) {
-                logger.logNormal(android.util.Log.getStackTraceString(e));
-                logger.logError(getString(R.string.tips_failed, getViewText(view)));
-            }
+        findViewById(R.id.settings).setOnClickListener(view -> {
+            final PopupCallback callback = type -> {
+                switch (type) {
+                    case "load": {
+                        ArrayList<String> output = new ArrayList<>();
+                        try (Shell shell = Shell.Builder.create().build(su.get())) {
+                            shell.newJob()
+                                    .add("getprop remote_provisioning.enable_rkpd")
+                                    .add("getprop remote_provisioning.hostname")
+                                    .add("getprop remote_provisioning.strongbox.rkp_only")
+                                    .add("getprop remote_provisioning.tee.rkp_only")
+                                    .add("getprop remote_provisioning.connect_timeout_millis")
+                                    .to(output)
+                                    .exec();
+                            logger.logNormal(Arrays.toString(output.toArray()));
+                            enable_rkpd.setChecked("true".equalsIgnoreCase(output.get(0)) || "1".equals(output.get(0)));
+                            hostname.setText(output.get(1));
+                            strongbox_rkp_only.setChecked("true".equalsIgnoreCase(output.get(2)) || "1".equals(output.get(2)));
+                            tee_rkp_only.setChecked("true".equalsIgnoreCase(output.get(3)) || "1".equals(output.get(3)));
+                            connect_timeout_millis.setDefaultValue(output.get(4).isEmpty() ? 0 : Integer.parseInt(output.get(4)) / 1000);
+                            boolean enable = enable_rkpd.isChecked();
+                            String host = hostname.getText().trim();
+                            boolean strongbox = strongbox_rkp_only.isChecked();
+                            boolean tee = tee_rkp_only.isChecked();
+                            int timeout = connect_timeout_millis.getSelectedNumber();
+                            sp.edit()
+                                    .putBoolean("enable", enable)
+                                    .putString("hostname", host)
+                                    .putBoolean("strongbox", strongbox)
+                                    .putBoolean("tee", tee)
+                                    .putInt("timeout", timeout)
+                                    .apply();
+                            logger.logSuccess(getString(R.string.tips_succeed, getViewText(view), ""));
+                        } catch (NoShellException e) {
+                            logger.logNormal(android.util.Log.getStackTraceString(e));
+                            logger.logError(getString(R.string.tips_su_failed, getViewText(view)));
+                        } catch (Exception e) {
+                            logger.logNormal(android.util.Log.getStackTraceString(e));
+                            logger.logError(getString(R.string.tips_failed, getViewText(view)));
+                        }
+                        break;
+                    }
+                    case "apply": {
+                        boolean enable = enable_rkpd.isChecked();
+                        String host = hostname.getText().trim();
+                        boolean strongbox = strongbox_rkp_only.isChecked();
+                        boolean tee = tee_rkp_only.isChecked();
+                        int timeout = connect_timeout_millis.getSelectedNumber();
+                        sp.edit()
+                                .putBoolean("enable", enable)
+                                .putString("hostname", host)
+                                .putBoolean("strongbox", strongbox)
+                                .putBoolean("tee", tee)
+                                .putInt("timeout", timeout)
+                                .apply();
+                        logger.logNormal(Arrays.toString(new Object[]{enable, host, strongbox, tee, timeout * 1000}));
+                        try (Shell shell = Shell.Builder.create().build(su.get())) {
+                            shell.newJob()
+                                    .add("setprop remote_provisioning.enable_rkpd " + enable)
+                                    .add("setprop remote_provisioning.hostname " + host)
+                                    .add("setprop remote_provisioning.strongbox.rkp_only " + (strongbox ? "true" : "''"))
+                                    .add("setprop remote_provisioning.tee.rkp_only " + (tee ? "true" : "''"))
+                                    .add("setprop remote_provisioning.connect_timeout_millis " + (timeout > 0 ? timeout * 1000 : "''"))
+                                    .exec();
+                            logger.logSuccess(getString(R.string.tips_succeed, getViewText(view), getString(R.string.apply_reboot_tips)));
+                        } catch (NoShellException e) {
+                            logger.logNormal(android.util.Log.getStackTraceString(e));
+                            logger.logError(getString(R.string.tips_su_failed, getViewText(view)));
+                        } catch (Exception e) {
+                            logger.logNormal(android.util.Log.getStackTraceString(e));
+                            logger.logError(getString(R.string.tips_failed, getViewText(view)));
+                        }
+                        break;
+                    }
+                }
+            };
+            new SettingsPopup(view, callback).show();
         });
-        findViewById(R.id.apply).setOnClickListener(view -> {
-            boolean enable = enable_rkpd.isChecked();
-            String host = hostname.getText().trim();
-            boolean strongbox = strongbox_rkp_only.isChecked();
-            boolean tee = tee_rkp_only.isChecked();
-            int timeout = connect_timeout_millis.getSelectedNumber();
-            sp.edit()
-                    .putBoolean("enable", enable)
-                    .putString("hostname", host)
-                    .putBoolean("strongbox", strongbox)
-                    .putBoolean("tee", tee)
-                    .putInt("timeout", timeout)
-                    .apply();
-            logger.logNormal(Arrays.toString(new Object[]{enable, host, strongbox, tee, timeout * 1000}));
-            try (Shell shell = Shell.Builder.create().build(su.get())) {
-                shell.newJob()
-                        .add("setprop remote_provisioning.enable_rkpd " + enable)
-                        .add("setprop remote_provisioning.hostname " + host)
-                        .add("setprop remote_provisioning.strongbox.rkp_only " + (strongbox ? "true" : "''"))
-                        .add("setprop remote_provisioning.tee.rkp_only " + (tee ? "true" : "''"))
-                        .add("setprop remote_provisioning.connect_timeout_millis " + (timeout > 0 ? timeout * 1000 : "''"))
-                        .exec();
-                logger.logSuccess(getString(R.string.tips_succeed, getViewText(view), getString(R.string.apply_reboot_tips)));
-            } catch (NoShellException e) {
-                logger.logNormal(android.util.Log.getStackTraceString(e));
-                logger.logError(getString(R.string.tips_su_failed, getViewText(view)));
-            } catch (Exception e) {
-                logger.logNormal(android.util.Log.getStackTraceString(e));
-                logger.logError(getString(R.string.tips_failed, getViewText(view)));
-            }
-        });
-        findViewById(R.id.apply).setOnLongClickListener(v -> {
+        findViewById(R.id.settings).setOnLongClickListener(v -> {
             new MaterialDialog.Builder(v.getContext())
                     .title("SU PATH")
                     .content("Full path of the su executable")
@@ -231,6 +251,89 @@ public class MainActivity extends Activity {
         } else {
             findViewById(R.id.engineer).setVisibility(View.GONE);
         }
+        if (Build.HARDWARE.matches("qcom")) {
+            findViewById(R.id.keybox).setOnClickListener(view -> {
+                final AtomicBoolean exportTrickyStore = new AtomicBoolean(false);
+                final AtomicReference<Runnable> runnableReference = new AtomicReference<>();
+                final Runnable runnable = () -> DialogLoader.getInstance().showConfirmDialog(
+                        MainActivity.this,
+                        "是否导出至 TrickyStore",
+                        "将直接覆盖 /data/adb/tricky_store/keybox.xml, 请自行备份",
+                        "是, 导出并覆盖",
+                        (dialog, which) -> {
+                            dialog.dismiss();
+                            exportTrickyStore.set(true);
+                            new Thread(runnableReference.get()).start();
+                        },
+                        "否, 仅导出",
+                        (dialog, which) -> {
+                            dialog.dismiss();
+                            new Thread(runnableReference.get()).start();
+                        }
+                );
+                final PopupCallback callback = type -> {
+                    switch (type) {
+                        case "V2": {
+                            runnableReference.set(() -> {
+                                try {
+                                    final rkp_v2.Config cfg = new rkp_v2.Config();
+                                    cfg.outDir = getCacheDir();
+                                    cfg.kmcliPath = new File(getApplicationInfo().nativeLibraryDir, "libkmcli.so").getPath();
+                                    final rkp_v2.Result r = rkp_v2.run(cfg, logger, su.get());
+                                    if (r.keyboxXml != null) {
+                                        logger.logSuccess(getString(R.string.tips_succeed, getString(R.string.keybox), ""));
+                                        exportKeybox(logger, exportTrickyStore, su, r.keyboxXml);
+                                    }
+                                } catch (final Exception e) {
+                                    logger.logNormal(android.util.Log.getStackTraceString(e));
+                                    logger.logError(getString(R.string.tips_failed, getString(R.string.keybox)));
+                                }
+                                cancelCountDown(view);
+                            });
+                            runnable.run();
+                            break;
+                        }
+                        case "V1": {
+                            runnableReference.set(() -> {
+                                try {
+                                    final File keybox = new File(getCacheDir(), "keybox.xml");
+                                    // noinspection ResultOfMethodCallIgnored
+                                    keybox.delete();
+                                    final ArrayList<String> output = new ArrayList<>();
+                                    final ArrayList<String> error = new ArrayList<>();
+                                    try (final Shell shell = Shell.Builder.create().build(su.get())) {
+                                        shell.newJob()
+                                                .add(buildJavaShell(rkp_v1.class, "rkp", getCacheDir().getPath()))
+                                                .to(output, error)
+                                                .exec();
+                                        printConsole(logger, output, error);
+                                    } catch (final NoShellException e) {
+                                        logger.logNormal(android.util.Log.getStackTraceString(e));
+                                        logger.logError(getString(R.string.tips_su_failed, getString(R.string.keybox)));
+                                    } catch (final Exception e) {
+                                        logger.logNormal(android.util.Log.getStackTraceString(e));
+                                        logger.logError(getString(R.string.tips_failed, getString(R.string.keybox)));
+                                    }
+                                    if (keybox.length() > 0) {
+                                        logger.logSuccess(getString(R.string.tips_succeed, getString(R.string.keybox), ""));
+                                        exportKeybox(logger, exportTrickyStore, su, keybox);
+                                    }
+                                } catch (final Exception e) {
+                                    logger.logNormal(android.util.Log.getStackTraceString(e));
+                                    logger.logError(getString(R.string.tips_failed, getString(R.string.keybox)));
+                                }
+                                cancelCountDown(view);
+                            });
+                            runnable.run();
+                            break;
+                        }
+                    }
+                };
+                new KeyboxPopup(view, callback).show();
+            });
+        } else {
+            findViewById(R.id.keybox).setVisibility(View.GONE);
+        }
         findViewById(R.id.clear).setOnClickListener(view -> {
             DialogLoader.getInstance().showConfirmDialog(
                     view.getContext(),
@@ -271,7 +374,7 @@ public class MainActivity extends Activity {
                 ArrayList<String> error = new ArrayList<>();
                 try (Shell shell = Shell.Builder.create().build(su.get())) {
                     shell.newJob()
-                            .add(buildExecShell(""))
+                            .add(buildJavaShell(""))
                             .to(output, error)
                             .exec();
                     String status = "";
@@ -313,7 +416,7 @@ public class MainActivity extends Activity {
                 try (Shell shell = Shell.Builder.create().build(su.get())) {
                     shell.newJob()
                             .add("cmd remote_provisioning dump")
-                            .add(buildExecShell("dump"))
+                            .add(buildJavaShell("dump"))
                             .to(output, error)
                             .exec();
                     for (String s : output) {
@@ -340,7 +443,7 @@ public class MainActivity extends Activity {
             }).start();
         });
         findViewById(R.id.csr).setOnClickListener(view -> {
-            final Popup.PopupCallback callback = type -> {
+            final PopupCallback callback = type -> {
                 ArrayList<String> output = new ArrayList<>();
                 ArrayList<String> error = new ArrayList<>();
                 try (Shell shell = Shell.Builder.create().build(su.get())) {
@@ -382,10 +485,10 @@ public class MainActivity extends Activity {
                 }
                 cancelCountDown(view);
             };
-            new Popup(view, callback).show();
+            new TypePopup(view, callback).show();
         });
         findViewById(R.id.certify).setOnClickListener(view -> {
-            final Popup.PopupCallback callback = type -> {
+            final PopupCallback callback = type -> {
                 ArrayList<String> output = new ArrayList<>();
                 ArrayList<String> error = new ArrayList<>();
                 try (Shell shell = Shell.Builder.create().build(su.get())) {
@@ -442,10 +545,68 @@ public class MainActivity extends Activity {
                 }
                 cancelCountDown(view);
             };
-            new Popup(view, callback).show();
+            new TypePopup(view, callback).show();
         });
         checkSignatures();
         showTextGuide();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_EXPORT_KEYBOX && resultCode == RESULT_OK && data != null) {
+            try (final OutputStream out = getContentResolver().openOutputStream(Objects.requireNonNull(data.getData()))) {
+                assert out != null;
+                try (final FileInputStream in = new FileInputStream(sPendingFile)) {
+                    in.transferTo(out);
+                }
+                XToastUtils.success("保存成功");
+            } catch (final Exception ignored) {
+            }
+        }
+    }
+
+    private void exportKeybox(final LoggerTextView logger,
+                              final AtomicBoolean exportTrickyStore, final AtomicReference<String> su,
+                              final File keybox) {
+        if (exportTrickyStore.get()) {
+            try (final Shell shell = Shell.Builder.create().build(su.get())) {
+                final ArrayList<String> output = new ArrayList<>();
+                final ArrayList<String> error = new ArrayList<>();
+                shell.newJob()
+                        .add(buildExecShell("/system/bin/cp -f " + keybox + " /data/adb/tricky_store/keybox.xml"))
+                        .to(output, error)
+                        .exec();
+                printConsole(logger, output, error);
+            } catch (NoShellException e) {
+                logger.logNormal(android.util.Log.getStackTraceString(e));
+                logger.logError(getString(R.string.tips_su_failed, getString(R.string.keybox)));
+            } catch (Exception e) {
+                logger.logNormal(android.util.Log.getStackTraceString(e));
+                logger.logError(getString(R.string.tips_failed, getString(R.string.keybox)));
+            }
+        }
+        sPendingFile = keybox;
+        final Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/xml");
+        intent.putExtra(Intent.EXTRA_TITLE, keybox.getName());
+        startActivityForResult(intent, REQ_EXPORT_KEYBOX);
+    }
+
+    private void printConsole(final LoggerTextView logger,
+                              final ArrayList<String> output,
+                              final ArrayList<String> error) {
+        for (final String s : output) {
+            logger.logNormal(s);
+        }
+        if (!error.isEmpty()) {
+            int limit = 18;
+            for (final String s : error) {
+                logger.logError(s);
+                if (--limit <= 0) break;
+            }
+        }
     }
 
     @Override
@@ -460,17 +621,33 @@ public class MainActivity extends Activity {
         });
     }
 
-    private String buildExecShell(String cmd) throws Exception {
-        File exe = new File(getApplicationInfo().nativeLibraryDir, "librkp.so");
-        File apk = new File(getCacheDir(), "rkpdapp.apk");
-        try (InputStream inputStream = getAssets().open("rkpdapp.apk")) {
+    private String buildExecShell(final String cmd) {
+        final File exe = new File(getApplicationInfo().nativeLibraryDir, "librkp.so");
+        return exe + " " + cmd;
+    }
+
+    private String buildJavaShell(final Class<?> cls, final String name, final String cmd) throws Exception {
+        final File apk = new File(getCacheDir(), "rkpdapp.apk");
+        try (final InputStream inputStream = getAssets().open("rkpdapp.apk")) {
             if (apk.length() != inputStream.available()) {
                 try (FileOutputStream outputStream = new FileOutputStream(apk, false)) {
                     inputStream.transferTo(outputStream);
                 }
             }
         }
-        return exe + " /system/bin/app_process -Djava.class.path='" + getApplicationInfo().publicSourceDir + "' / --nice-name=com.android.rkpdapp rp.rkp.rkpd '" + apk + "' " + cmd;
+        return buildExecShell("/system/bin/app_process -Djava.class.path='" + getApplicationInfo().publicSourceDir + "' / --nice-name=" + name + ' ' + cls.getName() + ' ' + cmd);
+    }
+
+    private String buildJavaShell(final String cmd) throws Exception {
+        final File apk = new File(getCacheDir(), "rkpdapp.apk");
+        try (final InputStream inputStream = getAssets().open("rkpdapp.apk")) {
+            if (apk.length() != inputStream.available()) {
+                try (FileOutputStream outputStream = new FileOutputStream(apk, false)) {
+                    inputStream.transferTo(outputStream);
+                }
+            }
+        }
+        return buildJavaShell(rp.rkp.rkpd.class, "com.android.rkpdapp", "'" + apk + "' " + cmd);
     }
 
     private void checkSignatures() {
@@ -506,8 +683,7 @@ public class MainActivity extends Activity {
             return;
         }
         new GuideCaseQueue()
-                .add(buildGuideCase(R.id.load, R.string.guide_tips_load))
-                .add(buildGuideCase(R.id.apply, R.string.guide_tips_apply))
+                .add(buildGuideCase(R.id.settings, R.string.guide_tips_settings))
                 .add(buildGuideCase(R.id.cls, R.string.guide_tips_cls))
                 .add(buildGuideCase(R.id.clear, R.string.guide_tips_clear))
                 .add(buildGuideCase(R.id.renew, R.string.guide_tips_renew))
@@ -572,17 +748,91 @@ public class MainActivity extends Activity {
         return null;
     }
 
-    private static final class Popup extends XUISimplePopup<Popup>
+    public interface PopupCallback {
+        void run(String type);
+    }
+
+    private static final class SettingsPopup extends XUISimplePopup<SettingsPopup>
+            implements XUISimplePopup.OnPopupItemClickListener {
+        private final View view;
+        private final PopupCallback callback;
+
+        public SettingsPopup(final View view, final PopupCallback callback) {
+            super(view.getContext(), new String[]{
+                    "读取配置",
+                    "写入配置",
+            });
+            this.view = view;
+            this.callback = callback;
+            create(0, this);
+            setHasDivider(true);
+        }
+
+        public void show() {
+            showDown(this.view);
+        }
+
+        @Override
+        public void onItemClick(XUISimpleAdapter adapter, AdapterItem item, int position) {
+            final String type;
+            switch (position) {
+                case 0:
+                    type = "load";
+                    break;
+                case 1:
+                    type = "apply";
+                    break;
+                default:
+                    return;
+            }
+            this.callback.run(type);
+        }
+    }
+
+    private static final class KeyboxPopup extends XUISimplePopup<SettingsPopup>
+            implements XUISimplePopup.OnPopupItemClickListener {
+        private final View view;
+        private final PopupCallback callback;
+
+        public KeyboxPopup(final View view, final PopupCallback callback) {
+            super(view.getContext(), new String[]{
+                    "V2",
+                    "V1"
+            });
+            this.view = view;
+            this.callback = callback;
+            create(0, this);
+            setHasDivider(true);
+        }
+
+        public void show() {
+            showDown(this.view);
+        }
+
+        @Override
+        public void onItemClick(XUISimpleAdapter adapter, AdapterItem item, int position) {
+            final String type;
+            switch (position) {
+                case 0:
+                    type = "V2";
+                    break;
+                case 1:
+                    type = "V1";
+                    break;
+                default:
+                    return;
+            }
+            this.callback.run(type);
+        }
+    }
+
+    private static final class TypePopup extends XUISimplePopup<TypePopup>
             implements XUISimplePopup.OnPopupItemClickListener, Runnable {
         private final View view;
         private final PopupCallback callback;
         private String type;
 
-        public interface PopupCallback {
-            void run(String type);
-        }
-
-        public Popup(final View view, final PopupCallback callback) {
+        public TypePopup(final View view, final PopupCallback callback) {
             super(view.getContext(), new String[]{
                     "TEE",
                     "STRONGBOX",

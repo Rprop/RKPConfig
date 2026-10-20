@@ -5,10 +5,10 @@
     <string name="remote_provisioning_strongbox_rkp_only">StrongBox环境强制使用远程密钥配置</string>
     <string name="remote_provisioning_tee_rkp_only">TEE环境强制使用远程密钥配置</string>
     <string name="remote_provisioning_connect_timeout_millis">远程服务请求超时(秒)</string>
-    <string name="load">加载</string>
-    <string name="apply">设置</string>
+    <string name="settings">配置</string>
     <string name="cls">清屏</string>
     <string name="rpmb_keys">Key状态</string>
+    <string name="keybox">导出Keybox</string>
     <string name="clear">清理</string>
     <string name="renew">刷新</string>
     <string name="dump">转储</string>
@@ -36,7 +36,7 @@
     <string name="clear_cancel">取消</string>
 
     <string name="guide_tips" formatted="false">使用 `%s` 以 %s</string>
-    <string name="guide_tips_load">加载当前系统远程密钥配置</string>
+    <string name="guide_tips_settings">加载或修改当前系统远程密钥配置</string>
     <string name="guide_tips_apply">修改系统远程密钥配置</string>
     <string name="guide_tips_cls">清空屏幕日志输出</string>
     <string name="guide_tips_clear">清空全部远程配置的密钥</string>

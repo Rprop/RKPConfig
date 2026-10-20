@@ -108,19 +108,11 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/load"
+            android:id="@+id/settings"
             style="@style/Button.Style"
             android:layout_width="wrap_content"
             android:background="@drawable/xui_config_bg_blue_btn"
-            android:text="@string/load" />
-
-        <Button
-            android:id="@+id/apply"
-            style="@style/Button.Style"
-            android:layout_width="wrap_content"
-            android:layout_marginStart="5dp"
-            android:background="@drawable/xui_config_bg_blue_btn"
-            android:text="@string/apply" />
+            android:text="@string/settings" />
 
         <Button
             android:id="@+id/cls"
@@ -137,6 +129,14 @@
             android:layout_marginStart="5dp"
             android:background="@drawable/xui_config_bg_blue_btn"
             android:text="@string/rpmb_keys" />
+
+        <com.xuexiang.xui.widget.button.CountDownButton
+            android:id="@+id/keybox"
+            style="@style/Button.Style"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/xui_config_bg_blue_btn"
+            android:text="@string/keybox" />
     </LinearLayout>
 
     <LinearLayout

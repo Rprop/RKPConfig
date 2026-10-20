@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 34
+        minSdkVersion 33
         targetSdkVersion rootProject.ext.kTargetSdkVersion
         applicationId 'rp.rkp'
         versionCode rootProject.ext.kVersionCode

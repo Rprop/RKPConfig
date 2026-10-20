@@ -5,8 +5,8 @@
     <string name="remote_provisioning_strongbox_rkp_only">remote_provisioning.strongbox.rkp_only</string>
     <string name="remote_provisioning_tee_rkp_only">remote_provisioning.tee.rkp_only</string>
     <string name="remote_provisioning_connect_timeout_millis">remote_provisioning.connect_timeout_millis</string>
-    <string name="load">Load</string>
-    <string name="apply">Apply</string>
+    <string name="settings">Settings</string>
+    <string name="keybox">Export Keybox</string>
     <string name="cls">Cls</string>
     <string name="rpmb_keys">RPMB Keys</string>
     <string name="clear">Clear</string>
@@ -38,7 +38,7 @@
     <string name="clear_cancel">NO</string>
 
     <string name="guide_tips" formatted="false">Use `%s` to %s</string>
-    <string name="guide_tips_load">load current system rkp configs</string>
+    <string name="guide_tips_settings">load or set current system rkp configs</string>
     <string name="guide_tips_apply">set rkp configs</string>
     <string name="guide_tips_cls">clear output logs</string>
     <string name="guide_tips_clear">clear rkp keys</string>

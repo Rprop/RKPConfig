@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 ext {
-    kVersionCode = 10
+    kVersionCode = 12
     kNdkVersion = '29.0.14206865'
     kBuildToolsVersion = '36.1.0'
     kCmakeVersion = '3.31.6'
