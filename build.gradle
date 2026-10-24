@@ -11,9 +11,12 @@ ext {
 
 buildscript {
     repositories {
-        maven { url = 'https://maven.aliyun.com/repository/public' }
-        maven { url = 'https://maven.aliyun.com/repository/google' }
-        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        def isLocal = System.getenv('CI') != 'true' && System.getenv('GITHUB_ACTIONS') != 'true'
+        if (isLocal) {
+            maven { url = 'https://maven.aliyun.com/repository/google' }
+            maven { url = 'https://maven.aliyun.com/repository/public' }
+            maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        }
         google()
         mavenCentral()
     }
@@ -25,11 +28,13 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url = 'https://maven.aliyun.com/repository/public' }
-        maven { url = 'https://maven.aliyun.com/repository/google' }
+        def isLocal = System.getenv('CI') != 'true' && System.getenv('GITHUB_ACTIONS') != 'true'
+        if (isLocal) {
+            maven { url = 'https://maven.aliyun.com/repository/google' }
+            maven { url = 'https://maven.aliyun.com/repository/public' }
+        }
         google()
         mavenCentral()
         maven { url = 'https://jitpack.io' }
-        maven { url = 'https://dl.bintray.com/tencentqcloudterminal/maven' }
     }
 }

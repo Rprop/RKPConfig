@@ -22,6 +22,25 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v4
+
+    - name: Install Android SDK packages
+      run: |
+        sdkmanager --install \
+          "cmake;3.31.6" \
+          "ndk;29.0.14206865" \
+          "platforms;android-36" \
+          "build-tools;36.1.0"
+
+    - name: Use official Gradle distribution
+      run: |
+        sed -i -E \
+          's|mirrors\.aliyun\.com/gradle/distributions/v[0-9.]+|services.gradle.org/distributions|' \
+          gradle/wrapper/gradle-wrapper.properties
+        sed -i 's/validateDistributionUrl=false/validateDistributionUrl=true/' \
+          gradle/wrapper/gradle-wrapper.properties
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
